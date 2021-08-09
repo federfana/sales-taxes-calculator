@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  LambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: |
+          import json
+
+          def calculateImported(price, imported):
+              if imported == 'Y':
+                  return round((price * 0.05), 1)
+              else:
+                  return 0.0
+
+          def calculateTax(price):
+              return price * 0.10
+
+          def sendReceipt(shoplist):
+              message = ""
+              for item in shoplist['items']:
+                  message += str(item['qty']) + " " + item['product'] + \
+                      ": " + str(item['price']) + "\n"
+              message += "Sales Taxes: " + str(shoplist['SalesTaxes']) + "\n"
+              message += "Total: " + str(shoplist['Total']) + "\n"
+              return message
+
+          def lambda_handler(event, context):
+              temTaxes = 0.0
+              salesTaxes = 0.0
+              total = 0.0
+              for item in event['items']:
+                  if item['specialproduct'] == 'Y':
+                      itemTaxes = calculateImported(
+                          item['price'], item['imported']) * item['qty']
+                      salesTaxes += itemTaxes
+                  else:
+                      itemTaxes = calculateTax(item['price']) * item['qty'] + calculateImported(
+                          item['price'], item['imported']) * item['qty']
+                      salesTaxes += itemTaxes
+                  item['price'] = round(item['price'] * item['qty'] + itemTaxes, 2)
+                  total += item['price']
+              event['SalesTaxes'] = round(salesTaxes, 2)
+              event['Total'] = total
+              return sendReceipt(event)
+
+      FunctionName:
+        Ref: LambdaFuncName
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt IAMRole.Arn
+  APIGatewayRestAPI:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name:
+        Ref: APIName
+    DependsOn:
+      - LambdaFunction
+  APIGatewayResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref APIGatewayRestAPI
+      ParentId: !GetAtt
+        - APIGatewayRestAPI
+        - RootResourceId
+      PathPart:
+        Ref: LambdaFuncName
+    DependsOn:
+      - APIGatewayRestAPI
+  APIGatewayMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref APIGatewayRestAPI
+      ResourceId: !Ref APIGatewayResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      MethodResponses:
+        - StatusCode: 200
+      Integration:
+        Type: AWS
+        IntegrationResponses:
+          - StatusCode: 200
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFuncNameArn}/invocations
+          - LambdaFuncNameArn: !GetAtt LambdaFunction.Arn
+    DependsOn:
+      - APIGatewayResource
+  APIGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref APIGatewayRestAPI
+      StageName:
+        Ref: EnvironmentName
+    DependsOn:
+      - APIGatewayMethod
+  APIGatewayPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - APIGatewayDeployment
+  IAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: Policy_sales-taxes-calculator
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:              
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+Parameters:
+  LambdaFuncName:
+    Type: String
+    Default: lambda_sales-taxes-calculator
+  APIName:
+    Type: String
+    Default: API_sales-taxes-calculator
+  EnvironmentName:
+    Type: String
+    Default: Prod

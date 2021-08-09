@@ -1,0 +1,32 @@
+{
+    "items": [
+        {
+            "product": "perfume",
+            "qty": 1,
+            "price": 27.99,
+            "specialproduct": "N",
+            "imported": "Y"
+        },
+        {
+            "product": "perfume",
+            "qty": 1,
+            "price": 18.99,
+            "specialproduct": "N",
+            "imported": "N"
+        },
+        {
+            "product": "headache pills",
+            "qty": 1,
+            "price": 9.75,
+            "specialproduct": "Y",
+            "imported": "N"
+        },
+        {
+            "product": "box of chocolates",
+            "qty": 3,
+            "price": 11.25,
+            "specialproduct": "Y",
+            "imported": "Y"
+        }
+    ]
+}

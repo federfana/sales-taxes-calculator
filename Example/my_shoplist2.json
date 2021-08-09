@@ -1,0 +1,18 @@
+{
+    "items": [
+        {
+            "product": "chocolates",
+            "qty": 1,
+            "price": 10.00,
+            "specialproduct": "Y",
+            "imported": "Y"
+        },
+        {
+            "product": "perfume",
+            "qty": 1,
+            "price": 47.50,
+            "specialproduct": "N",
+            "imported": "Y"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "items": [
+        {
+            "product": "book",
+            "qty": 2,
+            "price": 12.49,
+            "specialproduct": "Y",
+            "imported": "N"
+        },
+        {
+            "product": "music CD",
+            "qty": 1,
+            "price": 14.99,
+            "specialproduct": "N",
+            "imported": "N"
+        },
+        {
+            "product": "chocolate bar",
+            "qty": 1,
+            "price": 0.85,
+            "specialproduct": "Y",
+            "imported": "N"
+        }
+    ]
+}
