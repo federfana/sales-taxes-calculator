@@ -4,22 +4,22 @@
             "product": "book",
             "qty": 2,
             "price": 12.49,
-            "specialproduct": "Y",
-            "imported": "N"
+            "specialproduct": true,
+            "imported": false
         },
         {
             "product": "music CD",
             "qty": 1,
             "price": 14.99,
-            "specialproduct": "N",
-            "imported": "N"
+            "specialproduct": false,
+            "imported": false
         },
         {
             "product": "chocolate bar",
             "qty": 1,
             "price": 0.85,
-            "specialproduct": "Y",
-            "imported": "N"
+            "specialproduct": true,
+            "imported": false
         }
     ]
 }
