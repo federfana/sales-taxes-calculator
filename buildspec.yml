@@ -127,6 +127,9 @@ Resources:
                   - 'logs:CreateLogGroup'
                   - 'logs:PutLogEvents'
                 Resource: '*'
+Outputs:
+  apiGatewayInvokeURL:
+    Value: !Sub https://${APIName}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}
 Parameters:
   LambdaFuncName:
     Type: String
