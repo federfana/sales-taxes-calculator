@@ -5,37 +5,30 @@ Resources:
     Properties:
       Code:
         ZipFile: |
-          import json
+          def calculate_imported(price, imported):
+              return round((price * 0.05), 1) if imported else 0.0
 
 
-          def calculateImported(price, imported):
-              if imported:
-                  return round((price * 0.05), 1)
-              else:
-                  return 0.0
-
-
-          def calculateTax(price):
+          def calculate_tax(price):
               return price * 0.10
 
 
-          def processItems(items):
-              itemTaxes = 0.0
-              salesTaxes = 0.0
+          def process_items(items):
+              sales_taxes = 0.0
               total = 0.0
               try:
                   for item in items['items']:
                       if item['specialproduct']:
-                          itemTaxes = calculateImported(
+                          item_taxes = calculate_imported(
                               item['price'], item['imported']) * item['qty']
-                          salesTaxes += itemTaxes
+                          sales_taxes += item_taxes
                       else:
-                          itemTaxes = calculateTax(item['price']) * item['qty'] + calculateImported(
+                          item_taxes = calculate_tax(item['price']) * item['qty'] + calculate_imported(
                               item['price'], item['imported']) * item['qty']
-                          salesTaxes += itemTaxes
-                      item['price'] = round(item['price'] * item['qty'] + itemTaxes, 2)
+                          sales_taxes += item_taxes
+                      item['price'] = round(item['price'] * item['qty'] + item_taxes, 2)
                       total += item['price']
-                  items['SalesTaxes'] = round(salesTaxes, 2)
+                  items['SalesTaxes'] = round(sales_taxes, 2)
                   items['Total'] = total
                   return {
                       'statusCode': 200,
@@ -49,7 +42,8 @@ Resources:
 
 
           def lambda_handler(event, context):
-              return processItems(event)
+              return process_items(event)
+
       FunctionName:
         Ref: LambdaFuncName
       Handler: index.lambda_handler
